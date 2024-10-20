@@ -32,10 +32,10 @@ class Message(models.Model):
 
 class Mailings(models.Model):
     PERIODICITY = [
-        ('once_per_minute', 'Раз в минуту'),
-        ('once_a_day', 'Раз в день'),
-        ('once_a_week', 'раз в неделю'),
-        ('once_a_month', 'раз в месяц'),
+        (60, 'Раз в минуту'),
+        (300, 'Раз в 5 минут'),
+        (600, 'Раз в 10 минут'),
+        (3600, 'Раз в час'),
     ]
     STATUS = [
         ('completed', 'завершена'),
@@ -43,12 +43,15 @@ class Mailings(models.Model):
         ('launched', 'запущена'),
     ]
 
-    date_first_dispatch = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время последней отправки')
-    periodicity = models.CharField(max_length=15, choices=PERIODICITY, verbose_name='Периодичность')
-    status = models.CharField(max_length=15, choices=STATUS, verbose_name='Статус рассылки')
+    date_first_dispatch = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время первой отправки')
+    periodicity = models.IntegerField(choices=PERIODICITY, verbose_name='Периодичность')
+    status = models.CharField(max_length=15, choices=STATUS, default='created', verbose_name='Статус рассылки')
+    is_active = models.BooleanField(default=True, verbose_name='Активна ли рассылка')
+    next_send_date_time = models.DateTimeField(**NULLABLE, verbose_name='Дата и время следующей отправки')
+    last_send_date_time = models.DateTimeField(**NULLABLE, verbose_name='Дата и время последней отправки')
 
     # Связи с другими моделями
-    message = models.ForeignKey(Message, related_name='mailings', on_delete=models.CASCADE, verbose_name='Сообщение')
+    message = models.ForeignKey(Message, related_name='message', on_delete=models.CASCADE, verbose_name='Сообщение')
     client = models.ManyToManyField(Client, related_name='mailings', verbose_name='Клиенты')
 
     def __str__(self):
@@ -71,6 +74,7 @@ class MailingAttempt(models.Model):
 
     # Связь с рассылкой
     mailing = models.ForeignKey(Mailings, on_delete=models.CASCADE, related_name='mailings', verbose_name='Рассылки')
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, **NULLABLE, related_name='mailing_attempts')
 
     def __str__(self):
         return f'Попытка ({self.status})'
