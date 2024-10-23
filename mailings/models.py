@@ -43,12 +43,12 @@ class Mailings(models.Model):
         ('launched', 'запущена'),
     ]
 
-    date_first_dispatch = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время первой отправки')
+    date_first_dispatch = models.DateTimeField(**NULLABLE, verbose_name='Дата и время первой отправки')
     periodicity = models.IntegerField(choices=PERIODICITY, verbose_name='Периодичность')
     status = models.CharField(max_length=15, choices=STATUS, default='created', verbose_name='Статус рассылки')
     is_active = models.BooleanField(default=True, verbose_name='Активна ли рассылка')
-    next_send_date_time = models.DateTimeField(**NULLABLE, verbose_name='Дата и время следующей отправки')
-    last_send_date_time = models.DateTimeField(**NULLABLE, verbose_name='Дата и время последней отправки')
+    next_send_date_time = models.DateTimeField(auto_now_add=True, verbose_name='Дата и время следующей отправки')
+    last_send_date_time = models.DateTimeField(auto_now=True, verbose_name='Дата и время последней отправки')
 
     # Связи с другими моделями
     message = models.ForeignKey(Message, related_name='message', on_delete=models.CASCADE, verbose_name='Сообщение')

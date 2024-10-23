@@ -10,22 +10,30 @@
         </div>
     </div>
     <div class="row">
-        {% for message in messages %}
+        {% for mailing in mailings %}
         <div class="col-md-6 mb-3">
             <div class="card text-bg-light mb-3" style="height: 100%;">
                 <div class="row g-0">
                     <div class="col-md-8">
                         <div class="card-body">
-                            <h5 class="card-title">{{ message.title }}</h5>
+                            <h5 class="card-title">{{ mailing.title }}</h5>
                             <p class="card-text">
-                                <strong>Тело письма:</strong> {{ message.body }}<br>
+                                <strong>Первый запуск:</strong> {{ mailing.date_first_dispatch }}<br>
+                            </p>
+                            <p class="card-text">
+                                <strong>Периодичность:</strong> {{ mailing.get_periodicity_display }} сек.<br>
+                            </p>
+                            <p class="card-text">
+                                <strong>Статус:</strong> {{ mailing.get_status_display|title }}<br>
                             </p>
                             <div class="col-12">
                                 <div class="card-body">
                                     <a class="btn btn-custom m-2"
-                                       href="{% url 'mailings:message_delete' pk=message.id %}">Удалить</a>
+                                       href="{% url 'mailings:mailings_delete' pk=mailing.id %}">Удалить</a>
                                     <a class="btn btn-custom m-2"
-                                       href="{% url 'mailings:message_update' pk=message.id %}">Изменить</a>
+                                       href="{% url 'mailings:mailings_update' pk=mailing.id %}">Изменить</a>
+                                    <a class="btn btn-custom m-2"
+                                       href="{% url 'mailings:mailings_detail' pk=mailing.id %}">Подробнее</a>
                                 </div>
                             </div>
                         </div>
@@ -35,7 +43,7 @@
         </div>
         {% empty %}
         <div class="col-md-12">
-            <a class="btn btn-custom mx-2" href="{% url 'mailings:message_form' %}">Создать письмо для рассылки</a>
+            <a class="btn btn-custom mx-2" href="{% url 'mailings:mailings_form' %}">Создать рассылку</a>
         </div>
         {% endfor %}
     </div>

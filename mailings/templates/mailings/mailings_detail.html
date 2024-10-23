@@ -1,0 +1,48 @@
+{% extends 'mailings/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ title }}</h1>
+            <p><strong>Дата первой отправки:</strong> {{ mailing.date_first_dispatch }}</p>
+            <p><strong>Периодичность:</strong> {{ mailing.get_periodicity_display }}</p>
+            <p><strong>Статус рассылки:</strong> {{ mailing.get_status_display }}</p>
+            <p><strong>Дата последней отправки:</strong> {{ mailing.last_send_date_time }}</p>
+            <p><strong>Сообщение:</strong> {{ mailing.message.title }}</p>
+            <p><strong>Тело сообщения:</strong> {{ mailing.message.body }}</p>
+
+            <h3>Клиенты</h3>
+            <ul>
+                {% for client in clients %}
+                    <li>{{ client.full_name }} - {{ client.email }}</li>
+                {% empty %}
+                    <li>Нет клиентов для этой рассылки</li>
+                {% endfor %}
+            </ul>
+
+            <h3>Попытки рассылки</h3>
+            <ul>
+                {% for attempt in mailing_attempts %}
+                    <li>
+                        Дата попытки: {{ attempt.date_last_dispatch }}<br>
+                        Статус: {{ attempt.get_status_display }}<br>
+                        Ответ сервиса: {{ attempt.mail_service_response }}
+                    </li>
+                {% empty %}
+                    <li>Попыток отправки еще не было</li>
+                {% endfor %}
+            </ul>
+
+             {% if mailing.is_active %}
+                <a href="{% url 'mailings:mailings_toggle_active' mailing.id %}" class="btn btn-danger">Деактивировать рассылку</a>
+            <a href="{% url 'mailings:run_mailings' %}" class="btn btn-primary">Запустить рассылку</a>
+            {% else %}
+                <a href="{% url 'mailings:mailings_toggle_active' mailing.id %}" class="btn btn-success">Активировать рассылку</a>
+            {% endif %}
+
+            <a href="{% url 'mailings:mailings_list' %}" class="btn btn-primary">Назад к списку рассылок</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,3 +3,4 @@ python-dotenv
 pillow
 psycopg2-binary
 apscheduler
+django-crontab

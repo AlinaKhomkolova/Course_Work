@@ -36,7 +36,7 @@
         </div>
         {% empty %}
         <div class="col-md-12">
-            <p>Нет клиентов для отображения.</p>
+            <a class="btn btn-custom mx-2 " href="{% url 'mailings:client_form' %}">Добавить клиента</a>
         </div>
         {% endfor %}
     </div>

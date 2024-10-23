@@ -15,7 +15,7 @@
 
     <div class="row py-lg-3">
         <div class="col-lg-6 col-md-8 mx-auto d-flex justify-content-center">
-            <a class="btn btn-custom mx-2 " href=''>Создать рассылку</a>
+            <a class="btn btn-custom mx-2 " href="{% url 'mailings:mailings_form' %}">Создать рассылку</a>
             <a class="btn btn-custom mx-2 " href="{% url 'mailings:client_form' %}">Добавить клиента</a>
             <a class="btn btn-custom mx-2" href="{% url 'mailings:message_form' %}">Создать письмо для рассылки</a>
         </div>
