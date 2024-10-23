@@ -22,3 +22,16 @@ class MailingsAdmin(admin.ModelAdmin):
     list_display = ('id', 'periodicity', 'date_first_dispatch',)
     list_filter = ('id',)
     search_fields = ('client', 'message')
+    permission = [
+        ('can_view_all_mailings', 'Can view all mailings'),
+        ('can_view_users', 'Can view all users'),
+        ('can_block_users', 'Can block users'),
+        ('can_disable_mailings', 'Can disable mailings'),
+    ]
+    class Meta:
+        permissions = [
+            ("can_view_all_mailings", "Can view all mailings"),
+            ("can_view_users", "Can view all users"),
+            ("can_block_users", "Can block users"),
+            ("can_disable_mailings", "Can disable mailings"),
+        ]

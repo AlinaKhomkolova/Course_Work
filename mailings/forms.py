@@ -39,7 +39,8 @@ class MessageForm(StyleFormMixin, forms.ModelForm):
 class MailingsForm(StyleFormMixin, forms.ModelForm):
     class Meta:
         model = Mailings
-        fields = '__all__'
+        exclude = ('owner',)
+
         widgets = {
             'date_first_dispatch': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }

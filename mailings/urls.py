@@ -5,6 +5,7 @@ from mailings.views import HomeView, ClientCreateView, MessageCreateView, Client
     ClientUpdateView, MessageListView, MessageUpdateView, MessageDeleteView, MailingCreateView, MailingListView, \
     MailingDeleteView, MailingUpdateView, MailingDetailView, MailingToggleActiveView, RunMailingCommandView
 
+
 app_name = MailingsConfig.name
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
@@ -28,4 +29,7 @@ urlpatterns = [
     path('<int:pk>/toggle-active/', MailingToggleActiveView.as_view(), name='mailings_toggle_active'),
     # Активация рассылки
     path('run-mailings/', RunMailingCommandView.as_view(), name='run_mailings'),  # Запуск рассылки
+
+    # path('block_user/<int:pk>/', block_user, name='block_user'),
+    # path('disable_mailing/<int:pk>/', disable_mailing, name='disable_mailing'),
 ]

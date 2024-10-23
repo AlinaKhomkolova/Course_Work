@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <a class="navbar-brand text-light d-flex align-items-center" href="{% url 'mailings:home' %}">
             <div class="ms-3">
-                <h1 class="mb-0">Рыссылыч</h1>
+                <h1 class="mb-0">Рассылыч</h1>
                 <div class="text-muted">
                     <h6 class="mb-0">Сайт для рассылки писем</h6>
                 </div>
@@ -24,10 +24,34 @@
                 <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{% url 'mailings:home' %}">Главная</a>
-                        <a class="nav-link active" aria-current="page" href="{% url 'mailings:client_list' %}">Список клиентов</a>
-                        <a class="nav-link active" aria-current="page" href="{% url 'mailings:message_list' %}">Список писем для рассылки</a>
-                        <a class="nav-link active" aria-current="page" href="{% url 'mailings:mailings_list' %}">Список рассылок</a>
+
+                        <a class="nav-link active" aria-current="page" href="{% url 'mailings:client_list' %}">Список
+                            клиентов</a>
+
+                        <a class="nav-link active" aria-current="page" href="{% url 'mailings:message_list' %}">Список
+                            писем для рассылки</a>
+                        <a class="nav-link active" aria-current="page" href="{% url 'mailings:mailings_list' %}">Список
+                            рассылок</a>
+
+                        <hr>
+                        {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <form action="{% url 'users:logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link active"
+                                    style="border: none; background: none; cursor: pointer;">Выйти
+                            </button>
+                        </form>
                     </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'users:login' %}">Войти</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'users:register' %}">Регистрация</a>
+                    </li>
+                    {% endif %}
+
                 </ul>
             </div>
         </div>

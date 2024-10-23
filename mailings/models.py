@@ -1,12 +1,15 @@
 from django.db import models
 
 from mailings.common import NULLABLE
+from users.models import User
 
 
 class Client(models.Model):
     email = models.EmailField(verbose_name='Email', help_text='Введите email')
     full_name = models.CharField(max_length=150, verbose_name='Ф.И.О', help_text='Введите ФИО')
     comment = models.TextField(**NULLABLE, verbose_name='Комментарий', help_text='Введите комментарий')
+
+    owner = models.ForeignKey(User, **NULLABLE, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.email}'
@@ -20,6 +23,8 @@ class Client(models.Model):
 class Message(models.Model):
     title = models.CharField(max_length=150, verbose_name='Тема письма', help_text='Введите тему письма')
     body = models.TextField(verbose_name='Тела письма', help_text='Введите содержание письма')
+
+    owner = models.ForeignKey(User, **NULLABLE, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.title}'
@@ -54,6 +59,8 @@ class Mailings(models.Model):
     message = models.ForeignKey(Message, related_name='message', on_delete=models.CASCADE, verbose_name='Сообщение')
     client = models.ManyToManyField(Client, related_name='mailings', verbose_name='Клиенты')
 
+    owner = models.ForeignKey(User, **NULLABLE, on_delete=models.CASCADE)
+
     def __str__(self):
         return f'Рассылка ({self.status}) от {self.date_first_dispatch}'
 
@@ -61,6 +68,13 @@ class Mailings(models.Model):
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
         ordering = ('date_first_dispatch',)
+
+        permissions = [
+            ("can_view_all_mailings", "Can view all mailings"),
+            ("can_view_users", "Can view all users"),
+            ("can_block_users", "Can block users"),
+            ("can_disable_mailings", "Can disable mailings"),
+        ]
 
 
 class MailingAttempt(models.Model):

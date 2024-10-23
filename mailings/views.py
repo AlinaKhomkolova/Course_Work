@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.management import call_command
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -19,7 +20,7 @@ class HomeView(ListView):
         return data
 
 
-class ClientCreateView(CreateView):
+class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     template_name = 'mailings/client_form.html'
     form_class = ClientForm
@@ -30,11 +31,23 @@ class ClientCreateView(CreateView):
         data['title'] = 'Добавление клиента'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы создать клиента.')
+            return redirect('users:login')
+        return super().dispatch(request, *args, **kwargs)
 
-class ClientListView(ListView):
+    def form_valid(self, form):
+        # Привязка пользователя к создаваемому клиенту
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+
+class ClientListView(PermissionRequiredMixin, ListView):
     model = Client
     template_name = 'mailings/client_list.html'
     context_object_name = 'clients'
+    permission_required = 'mailings.can_view_users'
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -48,8 +61,15 @@ class ClientListView(ListView):
         data['title'] = 'Список клиентов'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            messages.error(request, 'У вас нет доступа к этой странице.')
+            return redirect('mailings:home')
 
-class ClientUpdateView(UpdateView):
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     template_name = 'mailings/client_form.html'
     success_url = reverse_lazy('mailings:client_list')
@@ -60,8 +80,23 @@ class ClientUpdateView(UpdateView):
         data['title'] = 'Изменение клиента'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request,
+                           'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы изменить данные клиента.')
+            return redirect('users:login')
+        obj = self.get_object()
+        if obj.owner != self.request.user:
+            messages.error(request, "Вы не можете редактировать этого клиента, так как он вам не принадлежит.")
+            return redirect('mailings:client_list')
 
-class ClientDeleteView(DeleteView):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
+
+
+class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
     success_url = reverse_lazy('mailings:client_list')
 
@@ -70,8 +105,22 @@ class ClientDeleteView(DeleteView):
         data['title'] = 'Удаление клиента'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы удалить клиента.')
+            return redirect('users:login')
+        obj = self.get_object()
+        if obj.owner != self.request.user:
+            messages.error(request, "Вы не можете удалить этого клиента, так как он вам не принадлежит.")
+            return redirect('mailings:client_list')
 
-class MessageCreateView(CreateView):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
+
+
+class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     form_class = MessageForm
     template_name = 'mailings/message_form.html'
@@ -82,11 +131,22 @@ class MessageCreateView(CreateView):
         data['title'] = 'Создание письма'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы создать письмо.')
+            return redirect('users:login')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        # Привязка пользователя к создаваемому письму
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 
 class MessageListView(ListView):
     model = Message
     template_name = 'mailings/message_list.html'
-    context_object_name = 'messages'
+    context_object_name = 'message_list'
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -101,7 +161,7 @@ class MessageListView(ListView):
         return data
 
 
-class MessageUpdateView(UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     template_name = 'mailings/message_form.html'
     success_url = reverse_lazy('mailings:message_list')
@@ -112,8 +172,22 @@ class MessageUpdateView(UpdateView):
         data['title'] = 'Изменение письма для рассылки'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы изменить письмо.')
+            return redirect('users:login')
 
-class MessageDeleteView(DeleteView):
+        obj = self.get_object()
+        if obj.owner != self.request.user:
+            messages.error(request, "Вы не можете редактировать это письмо, так как он вам не принадлежит.")
+            return redirect('mailings:message_list')
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+
+
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     success_url = reverse_lazy('mailings:message_list')
 
@@ -122,8 +196,20 @@ class MessageDeleteView(DeleteView):
         data['title'] = 'Удаление письма для рассылки'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы удалить письмо.')
+            return redirect('users:login')
 
-class MailingCreateView(CreateView):
+        obj = self.get_object()
+        if obj.owner != self.request.user:
+            messages.error(request, "Вы не можете удалить это письмо, так как он вам не принадлежит.")
+            return redirect('mailings:message_list')
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailings
     success_url = reverse_lazy('mailings:home')
     template_name = 'mailings/mailings_form.html'
@@ -134,11 +220,23 @@ class MailingCreateView(CreateView):
         data['title'] = 'Создание рассылки'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы создать рассылку.')
+            return redirect('users:login')
+        return super().dispatch(request, *args, **kwargs)
 
-class MailingListView(ListView):
+    def form_valid(self, form):
+        # Привязка пользователя к создаваемой рассылке
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+
+class MailingListView(PermissionRequiredMixin, ListView):
     model = Mailings
     template_name = 'mailings/mailings_list.html'
     context_object_name = 'mailings'
+    permission_required = 'mailings.can_view_all_mailings'
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -152,27 +250,65 @@ class MailingListView(ListView):
         data['title'] = 'Список рассылок'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            messages.error(request, 'У вас нет доступа к этой странице.')
+            return redirect('mailings:home')
 
-class MailingUpdateView(UpdateView):
+        return super().dispatch(request, *args, **kwargs)
+
+
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailings
     template_name = 'mailings/mailings_form.html'
     success_url = reverse_lazy('mailings:mailings_list')
     form_class = MailingsForm
+    permission_required = 'mailings.can_disable_mailings'
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['title'] = 'Изменение рассылки'
         return data
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы изменить рассылку.')
+            return redirect('users:login')
 
-class MailingDeleteView(DeleteView):
+        obj = self.get_object()
+        if obj.owner != self.request.user:
+            messages.error(request, "Вы не можете редактировать эту рассылку, так как она вам не принадлежит.")
+            return redirect('mailings:mailings_list')
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
+
+
+class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailings
     success_url = reverse_lazy('mailings:mailings_list')
+    permission_required = 'mailings.can_disable_mailings'
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['title'] = 'Удаление рассылки'
         return data
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Пожалуйста, войдите в систему или зарегистрируйтесь, чтобы удалить рассылку.')
+            return redirect('users:login')
+        obj = self.get_object()
+        if obj.owner != self.request.user:
+            messages.error(request, "Вы не можете удалить эту рассылку, так как она вам не принадлежит.")
+            return redirect('mailings:mailings_list')
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
 
 
 class MailingDetailView(DetailView):
@@ -189,16 +325,26 @@ class MailingDetailView(DetailView):
         return data
 
 
-class MailingToggleActiveView(View):
+class MailingToggleActiveView(PermissionRequiredMixin, View):
+    permission_required = 'mailings.can_disable_mailings'
+
     def get(self, request, pk):
         mailing = Mailings.objects.get(pk=pk)
         mailing.is_active = not mailing.is_active
         mailing.save()
         return redirect('mailings:mailings_detail', pk=pk)
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            messages.error(request, 'У вас нет доступа к этой странице.')
+            return redirect('mailings:mailings_list')
 
-class RunMailingCommandView(View):
+        return super().dispatch(request, *args, **kwargs)
+
+
+class RunMailingCommandView(PermissionRequiredMixin, View):
     success_url = reverse_lazy('mailings:mailings_list')
+    permission_required = 'mailings.can_disable_mailings'
 
     def get(self, request):
         try:
@@ -207,3 +353,24 @@ class RunMailingCommandView(View):
         except Exception as e:
             messages.error(request, f'Ошибка при запуске рассылки: {e}')
         return redirect('mailings:mailings_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission():
+            messages.error(request, 'У вас нет доступа к этой странице.')
+            return redirect('mailings:mailings_list')
+
+        return super().dispatch(request, *args, **kwargs)
+
+# @permission_required('mailings.can_disable_mailings')
+# def disable_mailing(request, mailing_id):
+#     mailing = get_object_or_404(Mailings, id=mailing_id)
+#     mailing.is_active = False
+#     mailing.save()
+#     return redirect('view_mailings')  # Перенаправление обратно на список рассылок
+#
+# @permission_required('mailings.can_block_users')
+# def block_client(request, client_id):
+#     client = get_object_or_404(User, id=client_id)
+#     client.is_active = False  # Блокировка пользователя
+#     client.save()
+#     return redirect('mailings:client_list')
