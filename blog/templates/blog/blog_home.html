@@ -1,0 +1,23 @@
+{% extends 'mailings/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ title }}</h1>
+            <p><strong>количество рассылок:</strong> {{ total_mailings }}</p>
+            <p><strong>количество активных рассылок:</strong> {{ active_mailings }}</p>
+            <p><strong>количество клиентов для рассылок:</strong> {{ unique_clients }}</p>
+
+            <h3>Три случайные статьи:</h3>
+            <ul>
+                {% for post in random_posts %}
+                <li>
+                    <strong>{{ post.title }}</strong><br>
+                    {{ post.body|truncatewords:20 }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endblock %}
