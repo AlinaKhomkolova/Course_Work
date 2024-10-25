@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.core.cache import cache
 from django.core.management import call_command
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -40,7 +42,10 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         # Привязка пользователя к создаваемому клиенту
         form.instance.owner = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        cache.delete(f'client_list_{self.request.user.pk}')
+        return response
 
 
 class ClientListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
@@ -50,10 +55,13 @@ class ClientListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     permission_required = 'mailings.can_view_users'
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(owner=self.request.user)
-        client_id = self.request.GET.get('client')
-        if client_id:
-            queryset = queryset.filter(client_id=client_id)
+        key = f'client_list_{self.request.user.pk}'
+        queryset = cache.get(key)
+
+        if not queryset:
+            queryset = super().get_queryset().filter(owner=self.request.user)
+            cache.set(key, queryset, settings.CACHE_TIMEOUT)
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -65,7 +73,6 @@ class ClientListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
         if not self.has_permission():
             messages.error(request, 'У вас нет доступа к этой странице.')
             return redirect('mailings:home')
-
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -92,6 +99,11 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
 
         return super().dispatch(request, *args, **kwargs)
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        cache.delete(f'client_list_{self.request.user.pk}')
+        return response
+
     def get_object(self, queryset=None):
         return super().get_object(queryset)
 
@@ -115,6 +127,11 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
             return redirect('mailings:client_list')
 
         return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        cache.delete(f'client_list_{self.request.user.pk}')
+        return response
 
     def get_object(self, queryset=None):
         return super().get_object(queryset)
@@ -140,7 +157,9 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         # Привязка пользователя к создаваемому письму
         form.instance.owner = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        cache.delete(f'message_list_{self.request.user.pk}')
+        return response
 
 
 class MessageListView(LoginRequiredMixin, ListView):
@@ -149,10 +168,13 @@ class MessageListView(LoginRequiredMixin, ListView):
     context_object_name = 'message_list'
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(owner=self.request.user)
-        message_id = self.request.GET.get('client')
-        if message_id:
-            queryset = queryset.filter(message_id=message_id)
+        key = f'message_list_{self.request.user.pk}'
+        queryset = cache.get(key)
+
+        if not queryset:
+            queryset = super().get_queryset().filter(owner=self.request.user)
+            cache.set(key, queryset, settings.CACHE_TIMEOUT)
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -186,6 +208,11 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return super().get_object(queryset)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        cache.delete(f'message_list_{self.request.user.pk}')
+        return response
 
 
 class MessageDeleteView(LoginRequiredMixin, DeleteView):
@@ -245,9 +272,6 @@ class MailingListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().filter(owner=self.request.user)
-        mailing_id = self.request.GET.get('mailing')
-        if mailing_id:
-            queryset = queryset.filter(mailing_id=mailing_id)
         return queryset
 
     def get_context_data(self, **kwargs):
