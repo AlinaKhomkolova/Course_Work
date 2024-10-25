@@ -24,10 +24,10 @@ load_dotenv(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-yjp)j!)l91(-q0e%#)@^njy=b&g26r!j2^o#@$wiygw8eta9)8'
+SECRET_KEY = os.getenv('SECRET_KEY'),
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG'),
 
 ALLOWED_HOSTS = []
 
@@ -85,8 +85,8 @@ DATABASES = {
         'NAME': os.getenv('DATABASES_NAME'),
         'USER': os.getenv('DATABASES_USER'),
         'PASSWORD': os.getenv('DATABASES_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'HOST': os.getenv('DATABASES_HOST'),
+        'PORT': os.getenv('DATABASES_PORT'),
     }
 }
 
@@ -153,7 +153,7 @@ SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CACHE_ENABLED = os.getenv('CACHE_ENABLED') == 'True'
-
+CACHE_TIMEOUT = os.getenv('CACHE_TIMEOUT')
 if CACHE_ENABLED:
     CACHES = {
         "default": {
