@@ -43,14 +43,14 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ClientListView(PermissionRequiredMixin, ListView):
+class ClientListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = Client
     template_name = 'mailings/client_list.html'
     context_object_name = 'clients'
     permission_required = 'mailings.can_view_users'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(owner=self.request.user)
         client_id = self.request.GET.get('client')
         if client_id:
             queryset = queryset.filter(client_id=client_id)
@@ -143,13 +143,13 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MessageListView(ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     template_name = 'mailings/message_list.html'
     context_object_name = 'message_list'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(owner=self.request.user)
         message_id = self.request.GET.get('client')
         if message_id:
             queryset = queryset.filter(message_id=message_id)
@@ -184,7 +184,8 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
 
         return super().dispatch(request, *args, **kwargs)
 
-
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
 
 
 class MessageDeleteView(LoginRequiredMixin, DeleteView):
@@ -208,6 +209,9 @@ class MessageDeleteView(LoginRequiredMixin, DeleteView):
 
         return super().dispatch(request, *args, **kwargs)
 
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
+
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailings
@@ -218,6 +222,7 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['title'] = 'Создание рассылки'
+        data['form'].fields['clients'].queryset = Client.objects.filter(owner=self.request.user)
         return data
 
     def dispatch(self, request, *args, **kwargs):
@@ -232,14 +237,14 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MailingListView(PermissionRequiredMixin, ListView):
+class MailingListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     model = Mailings
     template_name = 'mailings/mailings_list.html'
     context_object_name = 'mailings'
     permission_required = 'mailings.can_view_all_mailings'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(owner=self.request.user)
         mailing_id = self.request.GET.get('mailing')
         if mailing_id:
             queryset = queryset.filter(mailing_id=mailing_id)
