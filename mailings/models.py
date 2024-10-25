@@ -56,8 +56,8 @@ class Mailings(models.Model):
     last_send_date_time = models.DateTimeField(auto_now=True, verbose_name='Дата и время последней отправки')
 
     # Связи с другими моделями
-    message = models.ForeignKey(Message, related_name='message', on_delete=models.CASCADE, verbose_name='Сообщение')
-    client = models.ManyToManyField(Client, related_name='mailings', verbose_name='Клиенты')
+    message = models.ForeignKey(Message, related_name='mailings', on_delete=models.CASCADE, verbose_name='Сообщение')
+    clients = models.ManyToManyField(Client, related_name='mailings', verbose_name='Клиенты')
 
     owner = models.ForeignKey(User, **NULLABLE, on_delete=models.CASCADE)
 
@@ -87,7 +87,7 @@ class MailingAttempt(models.Model):
     mail_service_response = models.CharField(max_length=250, **NULLABLE, verbose_name='Ответ почтового сервиса')
 
     # Связь с рассылкой
-    mailing = models.ForeignKey(Mailings, on_delete=models.CASCADE, related_name='mailings', verbose_name='Рассылки')
+    mailing = models.ForeignKey(Mailings, on_delete=models.CASCADE, related_name='mailing_attempts', verbose_name='Рассылки')
     client = models.ForeignKey(Client, on_delete=models.CASCADE, **NULLABLE, related_name='mailing_attempts')
 
     def __str__(self):
