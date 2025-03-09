@@ -1,0 +1,44 @@
+{% extends 'mailings/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-start mb-4">
+                <h1>Список клиентов</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% for client in clients %}
+        <div class="col-md-6 mb-3">
+            <div class="card text-bg-light mb-3" style="height: 100%;">
+                <div class="row g-0">
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ client.full_name|title }}</h5>
+                            <p class="card-text">
+                                <strong>Email:</strong> {{ client.email }}<br>
+                                <strong>Комментарий:</strong> {{ client.comment|default:"Не указано" }}<br>
+                            </p>
+                            <div class="col-12">
+                                <div class="card-body">
+                                    <a class="btn btn-custom m-2"
+                                       href="{% url 'mailings:client_delete' pk=client.id %}">Удалить</a>
+                                    <a class="btn btn-custom m-2"
+                                       href="{% url 'mailings:client_update' pk=client.id %}">Изменить</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-12">
+            <a class="btn btn-custom mx-2 " href="{% url 'mailings:client_form' %}">Добавить клиента</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

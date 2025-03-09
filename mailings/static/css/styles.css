@@ -1,0 +1,37 @@
+.custom-toggler {
+    border: 2px solid #ffffff; /* Толщина обводки кнопки */
+    border-radius: 5px; /* Радиус скругления углов */
+    color: #ffffff; /* Цвет текста */
+    background-color: #d0cecf; /* Цвет фона кнопки */
+}
+.custom-toggler:hover {
+    background-color: #dce4e7; /* Цвет фона при наведении */
+}
+.custom-toggler:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5); /* Тень при фокусе */
+}
+.bg-custom {
+    background-color: #b498a7; /* Ваш цвет */
+    color: white;
+}
+
+.btn-custom {
+    background-color: #8b9d85;
+    color: white;
+}
+.btn-custom:hover {
+    background-color: #b0c4a9; /* Цвет фона при наведении */
+}
+
+/* Стили для ссылки "В начало страницы" */
+.footer-link {
+    color: #665c49; /* Цвет текста ссылки */
+}
+
+.btn-custom.position-absolute {
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; /* Позиция от верхнего края */
+    left: 0; /* Позиция от левого края */
+    margin-top: 150px; /* Отступ сверху */
+    margin-left: 10px; /* Отступ слева */
+}
